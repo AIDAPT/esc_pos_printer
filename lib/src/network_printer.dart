@@ -32,13 +32,27 @@ class NetworkPrinter {
   CapabilityProfile get profile => _profile;
 
   Future<PosPrintResult> connect(String host,
-      {int port = 91000, Duration timeout = const Duration(seconds: 5)}) async {
+      {int port = 91000,
+      Duration timeout = const Duration(seconds: 5),
+      Function(SocketException)? onErrorListener,
+      Function(Uint8List)? onData}) async {
     _host = host;
     _port = port;
     try {
       _socket = await Socket.connect(host, port, timeout: timeout);
+      _socket.listen((data) {
+        if (onData != null) {
+          onData(data);
+        }
+      }, onError: (SocketException err) {
+        if (onErrorListener != null) {
+          onErrorListener(err);
+        }
+      });
       _socket.add(_generator.reset());
       return Future<PosPrintResult>.value(PosPrintResult.success);
+    } on SocketException catch (se) {
+      rethrow;
     } catch (e) {
       return Future<PosPrintResult>.value(PosPrintResult.timeout);
     }
