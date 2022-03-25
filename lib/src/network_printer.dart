@@ -35,7 +35,7 @@ class NetworkPrinter {
   Future<PosPrintResult> connect(String host,
       {int port = 91000,
       Duration timeout = const Duration(seconds: 5),
-      Function(SocketException)? onErrorListener,
+      Function(dynamic)? onErrorListener,
       Function(Uint8List)? onData}) async {
     _host = host;
     _port = port;
@@ -45,7 +45,7 @@ class NetworkPrinter {
         if (onData != null) {
           onData(data);
         }
-      }, onError: (SocketException err) {
+      }, onError: (dynamic err) {
         if (onErrorListener != null) {
           onErrorListener(err);
         }
