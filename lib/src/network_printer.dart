@@ -52,12 +52,11 @@ class NetworkPrinter {
       });
       _socket.add(_generator.reset());
       return Future<PosPrintResult>.value(PosPrintResult.success);
-    } on SocketException catch (se) {
-      log(se.message);
-      rethrow;
     } catch (e) {
-      log(e.toString());
-      return Future<PosPrintResult>.value(PosPrintResult.timeout);
+      if(e is SocketException) {
+        log(e.message);
+      }
+      rethrow;
     }
   }
 
