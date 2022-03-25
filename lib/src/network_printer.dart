@@ -6,6 +6,7 @@
  * See LICENSE for distribution and usage details.
  */
 
+import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data' show Uint8List;
 import 'package:esc_pos_utils/esc_pos_utils.dart';
@@ -52,8 +53,10 @@ class NetworkPrinter {
       _socket.add(_generator.reset());
       return Future<PosPrintResult>.value(PosPrintResult.success);
     } on SocketException catch (se) {
+      log(se.message);
       rethrow;
     } catch (e) {
+      log(e.toString());
       return Future<PosPrintResult>.value(PosPrintResult.timeout);
     }
   }
