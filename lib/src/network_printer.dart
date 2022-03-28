@@ -36,7 +36,7 @@ class NetworkPrinter {
       {int port = 91000,
       Duration timeout = const Duration(seconds: 5),
       Function(dynamic)? onErrorListener,
-      Function(Uint8List)? onData}) async {
+      Function(Uint8List?)? onData}) async {
     _host = host;
     _port = port;
     try {
@@ -49,7 +49,13 @@ class NetworkPrinter {
         if (onErrorListener != null) {
           onErrorListener(err);
         }
-      });
+      },
+      onDone: () {
+        if (onData != null) {
+          onData(null);
+        }
+      }
+      );
       _socket.add(_generator.reset());
       return Future<PosPrintResult>.value(PosPrintResult.success);
     } catch (e) {
