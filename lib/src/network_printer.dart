@@ -47,6 +47,12 @@ class NetworkPrinter {
         }
       });
 
+      _socket.done.catchError((dynamic err) {
+        if (onErrorListener != null) {
+          onErrorListener(err);
+        }
+      });
+
       _socket.listen((data) {
         if (onData != null) {
           onData(data);
