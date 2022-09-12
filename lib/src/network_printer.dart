@@ -45,7 +45,7 @@ class NetworkPrinter {
         if (onErrorListener != null) {
           onErrorListener(err);
         }
-      })
+      });
 
       _socket.listen((data) {
         if (onData != null) {
