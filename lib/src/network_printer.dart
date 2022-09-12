@@ -41,6 +41,12 @@ class NetworkPrinter {
     _port = port;
     try {
       _socket = await Socket.connect(host, port, timeout: timeout);
+      _socket.handleError((dynamic err){
+        if (onErrorListener != null) {
+          onErrorListener(err);
+        }
+      })
+
       _socket.listen((data) {
         if (onData != null) {
           onData(data);
