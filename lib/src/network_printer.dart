@@ -40,12 +40,21 @@ class NetworkPrinter {
         if (onErrorListener != null) {
           onErrorListener(err);
         }
+        print(["PRINTER handleError", err.toString()]);
       });
 
       _socket.done.catchError((dynamic err) {
         if (onErrorListener != null) {
           onErrorListener(err);
         }
+        print(["PRINTER catchError", err.toString()]);
+      });
+
+      _socket.done.onError((err, stackTrace) {
+        if (onErrorListener != null) {
+          onErrorListener(err);
+        }
+        print(["PRINTER onError", err.toString(), stackTrace]);
       });
 
       _socket.listen((data) {
