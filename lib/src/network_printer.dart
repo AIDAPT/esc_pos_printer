@@ -16,8 +16,7 @@ import './enums.dart';
 /// Network Printer
 class NetworkPrinter {
   NetworkPrinter(this._paperSize, this._profile, {int spaceBetweenRows = 5}) {
-    _generator =
-        Generator(paperSize, profile, spaceBetweenRows: spaceBetweenRows);
+    _generator = Generator(paperSize, profile, spaceBetweenRows: spaceBetweenRows);
   }
 
   final PaperSize _paperSize;
@@ -32,16 +31,12 @@ class NetworkPrinter {
   PaperSize get paperSize => _paperSize;
   CapabilityProfile get profile => _profile;
 
-  Future<PosPrintResult> connect(String host,
-      {int port = 91000,
-      Duration timeout = const Duration(seconds: 5),
-      Function(dynamic)? onErrorListener,
-      Function(Uint8List?)? onData}) async {
+  Future<PosPrintResult> connect(String host, {int port = 91000, Duration timeout = const Duration(seconds: 5), Function(dynamic)? onErrorListener, Function(Uint8List?)? onData}) async {
     _host = host;
     _port = port;
     try {
       _socket = await Socket.connect(host, port, timeout: timeout);
-      _socket.handleError((dynamic err){
+      _socket.handleError((dynamic err) {
         if (onErrorListener != null) {
           onErrorListener(err);
         }
@@ -57,21 +52,22 @@ class NetworkPrinter {
         if (onData != null) {
           onData(data);
         }
+        print(["PRINTER onData"]);
       }, onError: (dynamic err) {
         if (onErrorListener != null) {
           onErrorListener(err);
         }
-      },
-      onDone: () {
+        print(["PRINTER onError", err.toString()]);
+      }, onDone: () {
         if (onData != null) {
           onData(null);
         }
-      }
-      );
+        print(["PRINTER onDone"]);
+      });
       _socket.add(_generator.reset());
       return Future<PosPrintResult>.value(PosPrintResult.success);
     } catch (e) {
-      if(e is SocketException) {
+      if (e is SocketException) {
         log(e.message);
       }
       rethrow;
@@ -98,11 +94,7 @@ class NetworkPrinter {
     bool containsChinese = false,
     int? maxCharsPerLine,
   }) {
-    _socket.add(_generator.text(text,
-        styles: styles,
-        linesAfter: linesAfter,
-        containsChinese: containsChinese,
-        maxCharsPerLine: maxCharsPerLine));
+    _socket.add(_generator.text(text, styles: styles, linesAfter: linesAfter, containsChinese: containsChinese, maxCharsPerLine: maxCharsPerLine));
   }
 
   void setGlobalCodeTable(String codeTable) {
@@ -110,8 +102,7 @@ class NetworkPrinter {
   }
 
   void setGlobalFont(PosFontType font, {int? maxCharsPerLine}) {
-    _socket
-        .add(_generator.setGlobalFont(font, maxCharsPerLine: maxCharsPerLine));
+    _socket.add(_generator.setGlobalFont(font, maxCharsPerLine: maxCharsPerLine));
   }
 
   void setStyles(PosStyles styles, {bool isKanji = false}) {
