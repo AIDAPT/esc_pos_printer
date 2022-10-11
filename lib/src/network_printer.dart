@@ -51,95 +51,95 @@ class NetworkPrinter {
   }
 
   /// [delayMs]: milliseconds to wait after destroying the socket
-  void disconnect({int? delayMs}) async {
-    destroy();
+  Future<void> disconnect({int? delayMs}) async {
     if (delayMs != null) {
       await Future.delayed(Duration(milliseconds: delayMs), () => null);
     }
+    await destroy();
   }
 
-  void send(List<int> data) async {
+  Future<void> send(List<int> data) async {
     _client.add(data);
     dynamic flush = await _client.flush();
     print(flush);
   }
 
-  void destroy() {
+  Future<void> destroy() async {
     _client.destroy();
-    _socketListenerSubscription.cancel();
+    await _socketListenerSubscription.cancel();
   }
 
   // ************************ Printer Commands ************************
-  void reset() {
-    send(_generator.reset());
+  Future<void> reset() async {
+    await send(_generator.reset());
   }
 
-  void text(
+  Future<void> text(
     String text, {
     PosStyles styles = const PosStyles(),
     int linesAfter = 0,
     bool containsChinese = false,
     int? maxCharsPerLine,
-  }) {
-    send(_generator.text(text, styles: styles, linesAfter: linesAfter, containsChinese: containsChinese, maxCharsPerLine: maxCharsPerLine));
+  }) async {
+    await send(_generator.text(text, styles: styles, linesAfter: linesAfter, containsChinese: containsChinese, maxCharsPerLine: maxCharsPerLine));
   }
 
-  void setGlobalCodeTable(String codeTable) {
-    send(_generator.setGlobalCodeTable(codeTable));
+  Future<void> setGlobalCodeTable(String codeTable) async {
+    await send(_generator.setGlobalCodeTable(codeTable));
   }
 
-  void setGlobalFont(PosFontType font, {int? maxCharsPerLine}) {
-    send(_generator.setGlobalFont(font, maxCharsPerLine: maxCharsPerLine));
+  Future<void> setGlobalFont(PosFontType font, {int? maxCharsPerLine}) async {
+    await send(_generator.setGlobalFont(font, maxCharsPerLine: maxCharsPerLine));
   }
 
-  void setStyles(PosStyles styles, {bool isKanji = false}) {
-    send(_generator.setStyles(styles, isKanji: isKanji));
+  Future<void> setStyles(PosStyles styles, {bool isKanji = false}) async {
+    await send(_generator.setStyles(styles, isKanji: isKanji));
   }
 
-  void rawBytes(List<int> cmd, {bool isKanji = false}) {
-    send(_generator.rawBytes(cmd, isKanji: isKanji));
+  Future<void> rawBytes(List<int> cmd, {bool isKanji = false}) async {
+    await send(_generator.rawBytes(cmd, isKanji: isKanji));
   }
 
-  void emptyLines(int n) {
-    send(_generator.emptyLines(n));
+  Future<void> emptyLines(int n) async {
+    await send(_generator.emptyLines(n));
   }
 
-  void feed(int n) {
-    send(_generator.feed(n));
+  Future<void> feed(int n) async {
+    await send(_generator.feed(n));
   }
 
-  void cut({PosCutMode mode = PosCutMode.full}) {
-    send(_generator.cut(mode: mode));
+  Future<void> cut({PosCutMode mode = PosCutMode.full}) async {
+    await send(_generator.cut(mode: mode));
   }
 
-  void printCodeTable({String? codeTable}) {
-    send(_generator.printCodeTable(codeTable: codeTable));
+  Future<void> printCodeTable({String? codeTable}) async {
+    await send(_generator.printCodeTable(codeTable: codeTable));
   }
 
-  void beep({int n = 3, PosBeepDuration duration = PosBeepDuration.beep450ms}) {
-    send(_generator.beep(n: n, duration: duration));
+  Future<void> beep({int n = 3, PosBeepDuration duration = PosBeepDuration.beep450ms}) async {
+    await send(_generator.beep(n: n, duration: duration));
   }
 
-  void reverseFeed(int n) {
-    send(_generator.reverseFeed(n));
+  Future<void> reverseFeed(int n) async {
+    await send(_generator.reverseFeed(n));
   }
 
-  void row(List<PosColumn> cols) {
-    send(_generator.row(cols));
+  Future<void> row(List<PosColumn> cols) async {
+    await send(_generator.row(cols));
   }
 
-  void image(Image imgSrc, {PosAlign align = PosAlign.center}) {
-    send(_generator.image(imgSrc, align: align));
+  Future<void> image(Image imgSrc, {PosAlign align = PosAlign.center}) async {
+    await send(_generator.image(imgSrc, align: align));
   }
 
-  void imageRaster(
+  Future<void> imageRaster(
     Image image, {
     PosAlign align = PosAlign.center,
     bool highDensityHorizontal = true,
     bool highDensityVertical = true,
     PosImageFn imageFn = PosImageFn.bitImageRaster,
-  }) {
-    send(_generator.imageRaster(
+  }) async {
+    await send(_generator.imageRaster(
       image,
       align: align,
       highDensityHorizontal: highDensityHorizontal,
@@ -148,15 +148,15 @@ class NetworkPrinter {
     ));
   }
 
-  void barcode(
+  Future<void> barcode(
     Barcode barcode, {
     int? width,
     int? height,
     BarcodeFont? font,
     BarcodeText textPos = BarcodeText.below,
     PosAlign align = PosAlign.center,
-  }) {
-    send(_generator.barcode(
+  }) async {
+    await send(_generator.barcode(
       barcode,
       width: width,
       height: height,
@@ -166,30 +166,30 @@ class NetworkPrinter {
     ));
   }
 
-  void qrcode(
+  Future<void> qrcode(
     String text, {
     PosAlign align = PosAlign.center,
     QRSize size = QRSize.Size4,
     QRCorrection cor = QRCorrection.L,
-  }) {
-    send(_generator.qrcode(text, align: align, size: size, cor: cor));
+  }) async {
+    await send(_generator.qrcode(text, align: align, size: size, cor: cor));
   }
 
-  void drawer({PosDrawer pin = PosDrawer.pin2}) {
-    send(_generator.drawer(pin: pin));
+  Future<void> drawer({PosDrawer pin = PosDrawer.pin2}) async {
+    await send(_generator.drawer(pin: pin));
   }
 
-  void hr({String ch = '-', int? len, int linesAfter = 0}) {
-    send(_generator.hr(ch: ch, linesAfter: linesAfter));
+  Future<void> hr({String ch = '-', int? len, int linesAfter = 0}) async {
+    await send(_generator.hr(ch: ch, linesAfter: linesAfter));
   }
 
-  void textEncoded(
+  Future<void> textEncoded(
     Uint8List textBytes, {
     PosStyles styles = const PosStyles(),
     int linesAfter = 0,
     int? maxCharsPerLine,
-  }) {
-    send(_generator.textEncoded(
+  }) async {
+    await send(_generator.textEncoded(
       textBytes,
       styles: styles,
       linesAfter: linesAfter,
