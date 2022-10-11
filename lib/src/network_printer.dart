@@ -228,6 +228,6 @@ class NetworkPrinter {
 
   void send(List<int> data) {
     _socket.add(data);
-    _socket.flush();
+    //_socket.flush();
   }
 }
