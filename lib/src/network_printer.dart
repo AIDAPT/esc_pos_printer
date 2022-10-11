@@ -33,13 +33,12 @@ class NetworkPrinter {
   CapabilityProfile get profile => _profile;
   late StreamSubscription<RawSocketEvent> _socketListenerSubscription;
 
-  Future<PosPrintResult> connect(String host, {int port = 91000, Duration timeout = const Duration(seconds: 5), Function(RawSocketEvent?)? onData, Function()? onErrorListener, Function()? onDone}) async {
+  Future<PosPrintResult> connect(String host, {int port = 91000, Duration timeout = const Duration(seconds: 5), Function(RawSocketEvent?)? onData, Function(Object err, StackTrace)? onError, Function()? onDone}) async {
     _host = host;
     _port = port;
     try {
       _client = await RawSocket.connect(host, port, timeout: timeout);
-      _client.handleError(() => onErrorListener);
-      _socketListenerSubscription = _client.listen(onData, onError: onErrorListener, onDone: onDone, cancelOnError: true);
+      _socketListenerSubscription = _client.listen(onData, onError: onError, onDone: onDone, cancelOnError: true);
 
       /*dataStreamController = StreamController();
       dataStream = dataStreamController.stream;
