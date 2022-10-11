@@ -84,13 +84,15 @@ class NetworkPrinter {
     }
   }
 
-  void send(List<int> data) {
+  void send(List<int> data) async {
     try {
       final int writtenData = _client.write(data);
       print(['SOCKET WRITTEN DATA: $writtenData/${data.length}']);
       if (writtenData == 0) {
         throw OSError('Unable to send data');
       }
+      bool isEmpty = await _client.isEmpty;
+      print(['SOCKET isEmpty: $isEmpty']);
     } on OSError catch (err) {
       print(['SOCKET OSError', err.errorCode, err.message]);
       rethrow;
