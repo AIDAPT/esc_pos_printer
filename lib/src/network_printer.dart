@@ -32,14 +32,12 @@ class NetworkPrinter {
   PaperSize get paperSize => _paperSize;
   CapabilityProfile get profile => _profile;
   late StreamSubscription<RawSocketEvent> _socketListenerSubscription;
-  late SocketControlMessage _scm;
   Future<PosPrintResult> connect(String host, {int port = 91000, Duration timeout = const Duration(seconds: 5), Function(RawSocketEvent?)? onData, Function(Object err, StackTrace)? onError, Function()? onDone}) async {
     _host = host;
     _port = port;
     try {
       _client = await RawSocket.connect(host, port, timeout: timeout);
       _socketListenerSubscription = _client.listen(onData, onError: onError, onDone: onDone, cancelOnError: true);
-      _scm = SocketControlMessage.fromHandles([ResourceHandle.fromRawSocket(_client)]);
       /*dataStreamController = StreamController();
       dataStream = dataStreamController.stream;
       _socket = await Socket.connect(host, port, timeout: timeout, sourcePort: );
@@ -88,7 +86,7 @@ class NetworkPrinter {
 
   void send(List<int> data) {
     try {
-      final int writtenData = _client.sendMessage([_scm], data);
+      final int writtenData = _client.write(data);
       print(['SOCKET WRITTEN DATA: $writtenData/${data.length}']);
       if (writtenData == 0) {
         throw OSError('Unable to send data');
