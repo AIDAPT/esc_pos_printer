@@ -90,8 +90,14 @@ class NetworkPrinter {
     try {
       final int writtenData = _client.sendMessage([_scm], data);
       print(['SOCKET WRITTEN DATA: $writtenData/${data.length}']);
+      if (writtenData == 0) {
+        throw AssertionError('Unable to send data');
+      }
     } on OSError catch (err) {
-      print(['SOCKET ERROR', err.errorCode, err.message]);
+      print(['SOCKET OSError', err.errorCode, err.message]);
+      rethrow;
+    } on AssertionError catch (err) {
+      print(['SOCKET AssertionError', err.message]);
       rethrow;
     }
   }
