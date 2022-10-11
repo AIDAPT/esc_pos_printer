@@ -51,30 +51,30 @@ class NetworkPrinter {
   }
 
   /// [delayMs]: milliseconds to wait after destroying the socket
-  Future<void> disconnect({int? delayMs}) async {
+  Future disconnect({int? delayMs}) async {
     if (delayMs != null) {
       await Future.delayed(Duration(milliseconds: delayMs), () => null);
     }
     await destroy();
   }
 
-  Future<void> send(List<int> data) async {
+  Future send(List<int> data) async {
     _client.add(data);
     dynamic flush = await _client.flush();
     print(flush);
   }
 
-  Future<void> destroy() async {
+  Future destroy() async {
     _client.destroy();
     await _socketListenerSubscription.cancel();
   }
 
   // ************************ Printer Commands ************************
-  Future<void> reset() async {
+  Future reset() async {
     await send(_generator.reset());
   }
 
-  Future<void> text(
+  Future text(
     String text, {
     PosStyles styles = const PosStyles(),
     int linesAfter = 0,
@@ -84,55 +84,55 @@ class NetworkPrinter {
     await send(_generator.text(text, styles: styles, linesAfter: linesAfter, containsChinese: containsChinese, maxCharsPerLine: maxCharsPerLine));
   }
 
-  Future<void> setGlobalCodeTable(String codeTable) async {
+  Future setGlobalCodeTable(String codeTable) async {
     await send(_generator.setGlobalCodeTable(codeTable));
   }
 
-  Future<void> setGlobalFont(PosFontType font, {int? maxCharsPerLine}) async {
+  Future setGlobalFont(PosFontType font, {int? maxCharsPerLine}) async {
     await send(_generator.setGlobalFont(font, maxCharsPerLine: maxCharsPerLine));
   }
 
-  Future<void> setStyles(PosStyles styles, {bool isKanji = false}) async {
+  Future setStyles(PosStyles styles, {bool isKanji = false}) async {
     await send(_generator.setStyles(styles, isKanji: isKanji));
   }
 
-  Future<void> rawBytes(List<int> cmd, {bool isKanji = false}) async {
+  Future rawBytes(List<int> cmd, {bool isKanji = false}) async {
     await send(_generator.rawBytes(cmd, isKanji: isKanji));
   }
 
-  Future<void> emptyLines(int n) async {
+  Future emptyLines(int n) async {
     await send(_generator.emptyLines(n));
   }
 
-  Future<void> feed(int n) async {
+  Future feed(int n) async {
     await send(_generator.feed(n));
   }
 
-  Future<void> cut({PosCutMode mode = PosCutMode.full}) async {
+  Future cut({PosCutMode mode = PosCutMode.full}) async {
     await send(_generator.cut(mode: mode));
   }
 
-  Future<void> printCodeTable({String? codeTable}) async {
+  Future printCodeTable({String? codeTable}) async {
     await send(_generator.printCodeTable(codeTable: codeTable));
   }
 
-  Future<void> beep({int n = 3, PosBeepDuration duration = PosBeepDuration.beep450ms}) async {
+  Future beep({int n = 3, PosBeepDuration duration = PosBeepDuration.beep450ms}) async {
     await send(_generator.beep(n: n, duration: duration));
   }
 
-  Future<void> reverseFeed(int n) async {
+  Future reverseFeed(int n) async {
     await send(_generator.reverseFeed(n));
   }
 
-  Future<void> row(List<PosColumn> cols) async {
+  Future row(List<PosColumn> cols) async {
     await send(_generator.row(cols));
   }
 
-  Future<void> image(Image imgSrc, {PosAlign align = PosAlign.center}) async {
+  Future image(Image imgSrc, {PosAlign align = PosAlign.center}) async {
     await send(_generator.image(imgSrc, align: align));
   }
 
-  Future<void> imageRaster(
+  Future imageRaster(
     Image image, {
     PosAlign align = PosAlign.center,
     bool highDensityHorizontal = true,
@@ -148,7 +148,7 @@ class NetworkPrinter {
     ));
   }
 
-  Future<void> barcode(
+  Future barcode(
     Barcode barcode, {
     int? width,
     int? height,
@@ -166,7 +166,7 @@ class NetworkPrinter {
     ));
   }
 
-  Future<void> qrcode(
+  Future qrcode(
     String text, {
     PosAlign align = PosAlign.center,
     QRSize size = QRSize.Size4,
@@ -175,15 +175,15 @@ class NetworkPrinter {
     await send(_generator.qrcode(text, align: align, size: size, cor: cor));
   }
 
-  Future<void> drawer({PosDrawer pin = PosDrawer.pin2}) async {
+  Future drawer({PosDrawer pin = PosDrawer.pin2}) async {
     await send(_generator.drawer(pin: pin));
   }
 
-  Future<void> hr({String ch = '-', int? len, int linesAfter = 0}) async {
+  Future hr({String ch = '-', int? len, int linesAfter = 0}) async {
     await send(_generator.hr(ch: ch, linesAfter: linesAfter));
   }
 
-  Future<void> textEncoded(
+  Future textEncoded(
     Uint8List textBytes, {
     PosStyles styles = const PosStyles(),
     int linesAfter = 0,
