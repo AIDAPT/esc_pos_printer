@@ -38,6 +38,7 @@ class NetworkPrinter {
     _port = port;
     try {
       _client = await RawSocket.connect(host, port, timeout: timeout);
+      _client.handleError(() => onErrorListener);
       _socketListenerSubscription = _client.listen(onData, onError: onErrorListener, onDone: onDone, cancelOnError: true);
 
       /*dataStreamController = StreamController();
