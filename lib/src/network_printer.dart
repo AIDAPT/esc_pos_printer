@@ -91,8 +91,8 @@ class NetworkPrinter {
       if (writtenData == 0) {
         throw OSError('Unable to send data');
       }
-      bool isEmpty = await _client.isEmpty;
-      print(['SOCKET isEmpty: $isEmpty']);
+      //bool isEmpty = await _client.isEmpty;
+      //print(['SOCKET isEmpty: $isEmpty']);
     } on OSError catch (err) {
       print(['SOCKET OSError', err.errorCode, err.message]);
       rethrow;
