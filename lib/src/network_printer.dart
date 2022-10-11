@@ -31,7 +31,7 @@ class NetworkPrinter {
   PaperSize get paperSize => _paperSize;
   CapabilityProfile get profile => _profile;
 
-  Future<PosPrintResult> connect(String host, {int port = 91000, Duration timeout = const Duration(seconds: 5), Function(dynamic)? onErrorListener, Function(Uint8List?)? onData}) async {
+  Future<PosPrintResult> connect(String host, {int port = 91000, Duration timeout = const Duration(seconds: 5), Function(dynamic)? onErrorListener, Function(Uint8List?)? onData, Function(dynamic)? onClose}) async {
     _host = host;
     _port = port;
     try {
@@ -43,7 +43,12 @@ class NetworkPrinter {
         print(["PRINTER handleError", err.toString()]);
       });
 
-      _socket.done.catchError((dynamic err) {
+      _socket.done.then((dynamic value) {
+        if (onClose != null) {
+          onClose(value);
+        }
+        print(["PRINTER onDone", value.toString()]);
+      }).catchError((dynamic err) {
         if (onErrorListener != null) {
           onErrorListener(err);
         }
@@ -73,6 +78,7 @@ class NetworkPrinter {
         }
         print(["PRINTER onDone"]);
       });
+
       _socket.add(_generator.reset());
       return Future<PosPrintResult>.value(PosPrintResult.success);
     } catch (e) {
