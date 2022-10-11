@@ -25,22 +25,24 @@ class NetworkPrinter {
   String? _host;
   int? _port;
   late Generator _generator;
-  late Socket _socket;
+  late RawSocket _client;
 
   int? get port => _port;
   String? get host => _host;
   PaperSize get paperSize => _paperSize;
   CapabilityProfile get profile => _profile;
-  late Stream<List<int>> dataStream;
-  late StreamController<List<int>> dataStreamController;
+  late StreamSubscription<RawSocketEvent> _socketListenerSubscription;
 
-  Future<PosPrintResult> connect(String host, {int port = 91000, Duration timeout = const Duration(seconds: 5), Function(dynamic)? onErrorListener, Function(Uint8List?)? onData, Function(dynamic)? onClose}) async {
+  Future<PosPrintResult> connect(String host, {int port = 91000, Duration timeout = const Duration(seconds: 5), Function(RawSocketEvent?)? onData, Function()? onErrorListener, Function()? onDone}) async {
     _host = host;
     _port = port;
     try {
-      dataStreamController = StreamController();
+      _client = await RawSocket.connect(host, port, sourcePort: port, timeout: timeout);
+      _socketListenerSubscription = _client.listen(onData, onError: onErrorListener, onDone: onDone, cancelOnError: true);
+
+      /*dataStreamController = StreamController();
       dataStream = dataStreamController.stream;
-      _socket = await Socket.connect(host, port, timeout: timeout);
+      _socket = await Socket.connect(host, port, timeout: timeout, sourcePort: );
       _socket.handleError((dynamic err) {
         if (onErrorListener != null) {
           onErrorListener(err);
@@ -65,7 +67,7 @@ class NetworkPrinter {
         print(["PRINTER onDone"]);
       });
 
-      _socket.addStream(dataStream);
+      _socket.addStream(dataStream);*/
       send(_generator.reset());
       return Future<PosPrintResult>.value(PosPrintResult.success);
     } catch (e) {
@@ -78,10 +80,25 @@ class NetworkPrinter {
 
   /// [delayMs]: milliseconds to wait after destroying the socket
   void disconnect({int? delayMs}) async {
-    _socket.destroy();
+    destroy();
     if (delayMs != null) {
       await Future.delayed(Duration(milliseconds: delayMs), () => null);
     }
+  }
+
+  void send(List<int> data) {
+    try {
+      int writtenData = _client.sendMessage([], data);
+      print(['SOCKET WRITTEN DATA:$writtenData/${data.length}']);
+    } on OSError catch (err) {
+      print(['SOCKET ERROR', err.errorCode, err.message]);
+      rethrow;
+    }
+  }
+
+  void destroy() {
+    _client.shutdown(SocketDirection.both);
+    _socketListenerSubscription.cancel();
   }
 
   // ************************ Printer Commands ************************
@@ -212,8 +229,4 @@ class NetworkPrinter {
     ));
   }
   // ************************ (end) Printer Commands ************************
-
-  void send(List<int> data) {
-    dataStreamController.add(data);
-  }
 }
