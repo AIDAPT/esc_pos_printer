@@ -32,49 +32,29 @@ class NetworkPrinter {
   PaperSize get paperSize => _paperSize;
   CapabilityProfile get profile => _profile;
   late StreamSubscription<RawSocketEvent> _socketListenerSubscription;
+  late Function _connect;
   Future<PosPrintResult> connect(String host, {int port = 91000, Duration timeout = const Duration(seconds: 5), Function(Object err, StackTrace)? onError}) async {
     _host = host;
     _port = port;
     try {
-      _client = await RawSocket.connect(host, port, timeout: timeout);
-      _socketListenerSubscription = _client.listen(
-          (RawSocketEvent event) {
-            int availableData = _client.available();
-            print(['PRINTER-DATA', event, availableData]);
-          },
-          onError: onError,
-          onDone: () {
-            print(['PRINTER-DONE']);
-          },
-          cancelOnError: true);
-      /*dataStreamController = StreamController();
-      dataStream = dataStreamController.stream;
-      _socket = await Socket.connect(host, port, timeout: timeout, sourcePort: );
-      _socket.handleError((dynamic err) {
-        if (onErrorListener != null) {
-          onErrorListener(err);
+      _connect = () async {
+        _client = await RawSocket.connect(host, port, timeout: timeout);
+        try {
+          _socketListenerSubscription.cancel();
+        } catch (e) {
+          log(e.toString());
         }
-        print(["PRINTER handleError", err.toString()]);
-      });
-
-      dataStream.listen((List<int> data) {
-        if (onData != null) {
-          onData(Uint8List.fromList(data));
-        }
-        print(["PRINTER onData"]);
-      }, onError: (dynamic err) {
-        if (onErrorListener != null) {
-          onErrorListener(err);
-        }
-        print(["PRINTER onError", err.toString()]);
-      }, onDone: () {
-        if (onData != null) {
-          onData(null);
-        }
-        print(["PRINTER onDone"]);
-      });
-
-      _socket.addStream(dataStream);*/
+        _socketListenerSubscription = _client.listen(
+            (RawSocketEvent event) {
+              print(['PRINTER-DATA', event]);
+            },
+            onError: onError,
+            onDone: () {
+              print(['PRINTER-DONE']);
+            },
+            cancelOnError: true);
+      };
+      _connect();
       reset();
       return Future<PosPrintResult>.value(PosPrintResult.success);
     } catch (e) {
@@ -95,17 +75,12 @@ class NetworkPrinter {
 
   void send(List<int> data) async {
     try {
-      final int writtenData = _client.write(data);
-      print(['SOCKET WRITTEN DATA: $writtenData/${data.length}']);
-      if (writtenData == 0) {
-        throw OSError('Unable to send data');
-      }
-      //bool isEmpty = await _client.isEmpty;
-      //print(['SOCKET isEmpty: $isEmpty']);
-    } on OSError catch (err) {
-      print(['SOCKET OSError', err.errorCode, err.message]);
-      rethrow;
+      _connect();
+    } on Exception catch (err) {
+      print(['SOCKET OSError', err]);
     }
+    final int writtenData = _client.write(data);
+    print(['SOCKET WRITTEN DATA: $writtenData/${data.length}']);
   }
 
   void destroy() {
