@@ -79,7 +79,7 @@ class NetworkPrinter {
         print(["PRINTER onDone"]);
       });
 
-      _socket.add(_generator.reset());
+      send(_generator.reset());
       return Future<PosPrintResult>.value(PosPrintResult.success);
     } catch (e) {
       if (e is SocketException) {
@@ -99,7 +99,7 @@ class NetworkPrinter {
 
   // ************************ Printer Commands ************************
   void reset() {
-    _socket.add(_generator.reset());
+    send(_generator.reset());
   }
 
   void text(
@@ -109,55 +109,55 @@ class NetworkPrinter {
     bool containsChinese = false,
     int? maxCharsPerLine,
   }) {
-    _socket.add(_generator.text(text, styles: styles, linesAfter: linesAfter, containsChinese: containsChinese, maxCharsPerLine: maxCharsPerLine));
+    send(_generator.text(text, styles: styles, linesAfter: linesAfter, containsChinese: containsChinese, maxCharsPerLine: maxCharsPerLine));
   }
 
   void setGlobalCodeTable(String codeTable) {
-    _socket.add(_generator.setGlobalCodeTable(codeTable));
+    send(_generator.setGlobalCodeTable(codeTable));
   }
 
   void setGlobalFont(PosFontType font, {int? maxCharsPerLine}) {
-    _socket.add(_generator.setGlobalFont(font, maxCharsPerLine: maxCharsPerLine));
+    send(_generator.setGlobalFont(font, maxCharsPerLine: maxCharsPerLine));
   }
 
   void setStyles(PosStyles styles, {bool isKanji = false}) {
-    _socket.add(_generator.setStyles(styles, isKanji: isKanji));
+    send(_generator.setStyles(styles, isKanji: isKanji));
   }
 
   void rawBytes(List<int> cmd, {bool isKanji = false}) {
-    _socket.add(_generator.rawBytes(cmd, isKanji: isKanji));
+    send(_generator.rawBytes(cmd, isKanji: isKanji));
   }
 
   void emptyLines(int n) {
-    _socket.add(_generator.emptyLines(n));
+    send(_generator.emptyLines(n));
   }
 
   void feed(int n) {
-    _socket.add(_generator.feed(n));
+    send(_generator.feed(n));
   }
 
   void cut({PosCutMode mode = PosCutMode.full}) {
-    _socket.add(_generator.cut(mode: mode));
+    send(_generator.cut(mode: mode));
   }
 
   void printCodeTable({String? codeTable}) {
-    _socket.add(_generator.printCodeTable(codeTable: codeTable));
+    send(_generator.printCodeTable(codeTable: codeTable));
   }
 
   void beep({int n = 3, PosBeepDuration duration = PosBeepDuration.beep450ms}) {
-    _socket.add(_generator.beep(n: n, duration: duration));
+    send(_generator.beep(n: n, duration: duration));
   }
 
   void reverseFeed(int n) {
-    _socket.add(_generator.reverseFeed(n));
+    send(_generator.reverseFeed(n));
   }
 
   void row(List<PosColumn> cols) {
-    _socket.add(_generator.row(cols));
+    send(_generator.row(cols));
   }
 
   void image(Image imgSrc, {PosAlign align = PosAlign.center}) {
-    _socket.add(_generator.image(imgSrc, align: align));
+    send(_generator.image(imgSrc, align: align));
   }
 
   void imageRaster(
@@ -167,7 +167,7 @@ class NetworkPrinter {
     bool highDensityVertical = true,
     PosImageFn imageFn = PosImageFn.bitImageRaster,
   }) {
-    _socket.add(_generator.imageRaster(
+    send(_generator.imageRaster(
       image,
       align: align,
       highDensityHorizontal: highDensityHorizontal,
@@ -184,7 +184,7 @@ class NetworkPrinter {
     BarcodeText textPos = BarcodeText.below,
     PosAlign align = PosAlign.center,
   }) {
-    _socket.add(_generator.barcode(
+    send(_generator.barcode(
       barcode,
       width: width,
       height: height,
@@ -200,15 +200,15 @@ class NetworkPrinter {
     QRSize size = QRSize.Size4,
     QRCorrection cor = QRCorrection.L,
   }) {
-    _socket.add(_generator.qrcode(text, align: align, size: size, cor: cor));
+    send(_generator.qrcode(text, align: align, size: size, cor: cor));
   }
 
   void drawer({PosDrawer pin = PosDrawer.pin2}) {
-    _socket.add(_generator.drawer(pin: pin));
+    send(_generator.drawer(pin: pin));
   }
 
   void hr({String ch = '-', int? len, int linesAfter = 0}) {
-    _socket.add(_generator.hr(ch: ch, linesAfter: linesAfter));
+    send(_generator.hr(ch: ch, linesAfter: linesAfter));
   }
 
   void textEncoded(
@@ -217,7 +217,7 @@ class NetworkPrinter {
     int linesAfter = 0,
     int? maxCharsPerLine,
   }) {
-    _socket.add(_generator.textEncoded(
+    send(_generator.textEncoded(
       textBytes,
       styles: styles,
       linesAfter: linesAfter,
@@ -225,4 +225,9 @@ class NetworkPrinter {
     ));
   }
   // ************************ (end) Printer Commands ************************
+
+  void send(List<int> data) {
+    _socket.add(data);
+    _socket.flush();
+  }
 }
