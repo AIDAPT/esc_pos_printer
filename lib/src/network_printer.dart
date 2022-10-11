@@ -6,6 +6,7 @@
  * See LICENSE for distribution and usage details.
  */
 
+import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data' show Uint8List;
@@ -30,11 +31,15 @@ class NetworkPrinter {
   String? get host => _host;
   PaperSize get paperSize => _paperSize;
   CapabilityProfile get profile => _profile;
+  late Stream<List<int>> dataStream;
+  late StreamController<List<int>> dataStreamController;
 
   Future<PosPrintResult> connect(String host, {int port = 91000, Duration timeout = const Duration(seconds: 5), Function(dynamic)? onErrorListener, Function(Uint8List?)? onData, Function(dynamic)? onClose}) async {
     _host = host;
     _port = port;
     try {
+      dataStreamController = StreamController();
+      dataStream = dataStreamController.stream;
       _socket = await Socket.connect(host, port, timeout: timeout);
       _socket.handleError((dynamic err) {
         if (onErrorListener != null) {
@@ -227,7 +232,13 @@ class NetworkPrinter {
   // ************************ (end) Printer Commands ************************
 
   void send(List<int> data) {
-    _socket.add(data);
+    append(data);
+    //_socket.add(data);
     //_socket.flush();
+  }
+
+  void append(List<int> data) {
+    dataStreamController.add(data);
+    _socket.addStream(dataStream);
   }
 }
