@@ -25,31 +25,21 @@ class NetworkPrinter {
   String? _host;
   int? _port;
   late Generator _generator;
-  RawSocket? _client;
+  late Socket _client;
 
   int? get port => _port;
   String? get host => _host;
   PaperSize get paperSize => _paperSize;
   CapabilityProfile get profile => _profile;
-  StreamSubscription<RawSocketEvent>? _socketListenerSubscription;
-  late Function _connect;
-  int sockets = 0;
+  late StreamSubscription<Uint8List> _socketListenerSubscription;
   Future<PosPrintResult> connect(String host, {int port = 91000, Duration timeout = const Duration(seconds: 5), Function(Object err, StackTrace)? onError}) async {
     _host = host;
     _port = port;
     try {
-      _connect = () async {
-        try {
-          await _client?.close();
-          await _socketListenerSubscription?.cancel();
-        } catch (e) {
-          log(e.toString());
-        }
-        _client = await RawSocket.connect(host, port, timeout: timeout);
-        print([sockets++, _client!.port, _client!.address, _client!.remotePort, _client!.remotePort]);
-        _socketListenerSubscription = _client!.listen(null, onError: onError);
-      };
-      _connect();
+      _client = await Socket.connect(host, port, timeout: timeout);
+      print([_client.port, _client.address, _client.remotePort, _client.remotePort]);
+      _socketListenerSubscription = _client.listen(null, onError: onError);
+
       reset();
       return Future<PosPrintResult>.value(PosPrintResult.success);
     } catch (e) {
@@ -69,18 +59,14 @@ class NetworkPrinter {
   }
 
   void send(List<int> data) async {
-    try {
-      await _connect();
-    } catch (err) {
-      print(['SOCKET OSError', err]);
-    }
-    final int writtenData = _client!.write(data);
-    print(['SOCKET WRITTEN DATA: $writtenData/${data.length}']);
+    _client.add(data);
+    dynamic flush = await _client.flush();
+    print(flush);
   }
 
   void destroy() {
-    _client!.shutdown(SocketDirection.both);
-    _socketListenerSubscription!.cancel();
+    _client.destroy();
+    _socketListenerSubscription.cancel();
   }
 
   // ************************ Printer Commands ************************
