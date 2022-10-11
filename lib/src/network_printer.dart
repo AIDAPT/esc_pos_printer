@@ -41,7 +41,6 @@ class NetworkPrinter {
       dataStreamController = StreamController();
       dataStream = dataStreamController.stream;
       _socket = await Socket.connect(host, port, timeout: timeout);
-      _socket.addStream(dataStream);
       _socket.handleError((dynamic err) {
         if (onErrorListener != null) {
           onErrorListener(err);
@@ -66,6 +65,7 @@ class NetworkPrinter {
         print(["PRINTER onDone"]);
       });
 
+      _socket.addStream(dataStream);
       send(_generator.reset());
       return Future<PosPrintResult>.value(PosPrintResult.success);
     } catch (e) {
