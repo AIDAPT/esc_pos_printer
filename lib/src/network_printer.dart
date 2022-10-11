@@ -49,28 +49,9 @@ class NetworkPrinter {
         print(["PRINTER handleError", err.toString()]);
       });
 
-      _socket.done.then((dynamic value) {
-        if (onClose != null) {
-          onClose(value);
-        }
-        print(["PRINTER onDone", value.toString()]);
-      }).catchError((dynamic err) {
-        if (onErrorListener != null) {
-          onErrorListener(err);
-        }
-        print(["PRINTER catchError", err.toString()]);
-      });
-
-      _socket.done.onError((err, stackTrace) {
-        if (onErrorListener != null) {
-          onErrorListener(err);
-        }
-        print(["PRINTER onError", err.toString(), stackTrace]);
-      });
-
-      _socket.listen((data) {
+      dataStream.listen((List<int> data) {
         if (onData != null) {
-          onData(data);
+          onData(Uint8List.fromList(data));
         }
         print(["PRINTER onData"]);
       }, onError: (dynamic err) {
