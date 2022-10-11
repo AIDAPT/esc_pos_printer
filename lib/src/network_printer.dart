@@ -88,7 +88,7 @@ class NetworkPrinter {
 
   void send(List<int> data) {
     try {
-      int writtenData = _client.sendMessage([], data);
+      final int writtenData = _client.sendMessage([], data);
       print(['SOCKET WRITTEN DATA:$writtenData/${data.length}']);
     } on OSError catch (err) {
       print(['SOCKET ERROR', err.errorCode, err.message]);
