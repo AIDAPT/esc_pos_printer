@@ -44,15 +44,7 @@ class NetworkPrinter {
         } catch (e) {
           log(e.toString());
         }
-        _socketListenerSubscription = _client.listen(
-            (RawSocketEvent event) {
-              print(['PRINTER-DATA', event]);
-            },
-            onError: onError,
-            onDone: () {
-              print(['PRINTER-DONE']);
-            },
-            cancelOnError: true);
+        _socketListenerSubscription = _client.listen(null, onError: onError);
       };
       _connect();
       reset();
@@ -75,8 +67,8 @@ class NetworkPrinter {
 
   void send(List<int> data) async {
     try {
-      _connect();
-    } on Exception catch (err) {
+      await _connect();
+    } catch (err) {
       print(['SOCKET OSError', err]);
     }
     final int writtenData = _client.write(data);
