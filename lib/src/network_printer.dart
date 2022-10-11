@@ -25,13 +25,13 @@ class NetworkPrinter {
   String? _host;
   int? _port;
   late Generator _generator;
-  late RawSocket _client;
+  RawSocket? _client;
 
   int? get port => _port;
   String? get host => _host;
   PaperSize get paperSize => _paperSize;
   CapabilityProfile get profile => _profile;
-  late StreamSubscription<RawSocketEvent> _socketListenerSubscription;
+  StreamSubscription<RawSocketEvent>? _socketListenerSubscription;
   late Function _connect;
   int sockets = 0;
   Future<PosPrintResult> connect(String host, {int port = 91000, Duration timeout = const Duration(seconds: 5), Function(Object err, StackTrace)? onError}) async {
@@ -39,14 +39,15 @@ class NetworkPrinter {
     _port = port;
     try {
       _connect = () async {
-        _client = await RawSocket.connect(host, port, timeout: timeout);
-        print([sockets++, _client.port, _client.address, _client.remotePort, _client.remotePort]);
         try {
-          _socketListenerSubscription.cancel();
+          await _client?.close();
+          await _socketListenerSubscription?.cancel();
         } catch (e) {
           log(e.toString());
         }
-        _socketListenerSubscription = _client.listen(null, onError: onError);
+        _client = await RawSocket.connect(host, port, timeout: timeout);
+        print([sockets++, _client!.port, _client!.address, _client!.remotePort, _client!.remotePort]);
+        _socketListenerSubscription = _client!.listen(null, onError: onError);
       };
       _connect();
       reset();
@@ -73,13 +74,13 @@ class NetworkPrinter {
     } catch (err) {
       print(['SOCKET OSError', err]);
     }
-    final int writtenData = _client.write(data);
+    final int writtenData = _client!.write(data);
     print(['SOCKET WRITTEN DATA: $writtenData/${data.length}']);
   }
 
   void destroy() {
-    _client.shutdown(SocketDirection.both);
-    _socketListenerSubscription.cancel();
+    _client!.shutdown(SocketDirection.both);
+    _socketListenerSubscription!.cancel();
   }
 
   // ************************ Printer Commands ************************
