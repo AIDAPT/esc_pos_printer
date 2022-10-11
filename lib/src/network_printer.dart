@@ -36,7 +36,7 @@ class NetworkPrinter {
     _host = host;
     _port = port;
     try {
-      _client = await RawDatagramSocket.bind(host, port, reusePort: true);
+      _client = await RawDatagramSocket.bind(host, port);
       //print([_client.port, _client.address, _client.remotePort, _client.remotePort]);
       //_socketListenerSubscription = _client.listen(null, onError: onError);
 
