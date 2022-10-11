@@ -41,6 +41,7 @@ class NetworkPrinter {
       dataStreamController = StreamController();
       dataStream = dataStreamController.stream;
       _socket = await Socket.connect(host, port, timeout: timeout);
+      _socket.addStream(dataStream);
       _socket.handleError((dynamic err) {
         if (onErrorListener != null) {
           onErrorListener(err);
@@ -232,13 +233,6 @@ class NetworkPrinter {
   // ************************ (end) Printer Commands ************************
 
   void send(List<int> data) {
-    append(data);
-    //_socket.add(data);
-    //_socket.flush();
-  }
-
-  void append(List<int> data) {
     dataStreamController.add(data);
-    _socket.addStream(dataStream);
   }
 }
