@@ -25,7 +25,7 @@ class NetworkPrinter {
   String? _host;
   int? _port;
   late Generator _generator;
-  late RawDatagramSocket _client;
+  late Socket _client;
 
   int? get port => _port;
   String? get host => _host;
@@ -36,9 +36,10 @@ class NetworkPrinter {
     _host = host;
     _port = port;
     try {
-      _client = await RawDatagramSocket.bind(host, port);
-      //print([_client.port, _client.address, _client.remotePort, _client.remotePort]);
-      //_socketListenerSubscription = _client.listen(null, onError: onError);
+      _client = await Socket.connect(host, port, timeout: timeout);
+      _enableKeepalive(_client);
+      print([_client.port, _client.address, _client.remotePort, _client.remotePort]);
+      _socketListenerSubscription = _client.listen(null, onError: onError);
 
       reset();
       return Future<PosPrintResult>.value(PosPrintResult.success);
@@ -59,12 +60,68 @@ class NetworkPrinter {
   }
 
   void send(List<int> data) async {
-    _client.send(data, _client.address, _client.port);
+    _client.add(data);
   }
 
   void destroy() {
-    _client.close();
-    //_socketListenerSubscription.cancel();
+    _client.destroy();
+    _socketListenerSubscription.cancel();
+  }
+
+  void _enableKeepalive(Socket socket) {
+    // Enable keepalive probes every 60 seconds with 3 retries each 10 seconds
+    const keepaliveEnabled = true;
+    const keepaliveInterval = 60;
+    const keepaliveSuccessiveInterval = 10;
+    const keepaliveSuccessiveCount = 3;
+
+    if (Platform.isIOS || Platform.isMacOS) {
+      final enableKeepaliveOption = RawSocketOption.fromBool(
+          0xffff, // SOL_SOCKET
+          0x0008, // SO_KEEPALIVE
+          keepaliveEnabled);
+      final keepaliveIntervalOption = RawSocketOption.fromInt(
+          6, // IPPROTO_TCP
+          0x10, // TCP_KEEPALIVE
+          keepaliveInterval);
+      final keepaliveSuccessiveIntervalOption = RawSocketOption.fromInt(
+        6, // IPPROTO_TCP
+        0x101, // TCP_KEEPINTVL
+        keepaliveSuccessiveInterval,
+      );
+      final keepaliveusccessiveCountOption = RawSocketOption.fromInt(
+          6, // IPPROTO_TCP
+          0x102, // TCP_KEEPCNT
+          keepaliveSuccessiveCount);
+
+      socket.setRawOption(enableKeepaliveOption);
+      socket.setRawOption(keepaliveIntervalOption);
+      socket.setRawOption(keepaliveSuccessiveIntervalOption);
+      socket.setRawOption(keepaliveusccessiveCountOption);
+    } else if (Platform.isAndroid) {
+      final enableKeepaliveOption = RawSocketOption.fromBool(
+          0x1, // SOL_SOCKET
+          0x0009, // SO_KEEPALIVE
+          keepaliveEnabled);
+      final keepaliveIntervalOption = RawSocketOption.fromInt(
+          6, // IPPROTO_TCP
+          4, // TCP_KEEPIDLE
+          keepaliveInterval);
+      final keepaliveSuccessiveIntervalOption = RawSocketOption.fromInt(
+        6, // IPPROTO_TCP
+        5, // TCP_KEEPINTVL
+        keepaliveSuccessiveInterval,
+      );
+      final keepaliveusccessiveCountOption = RawSocketOption.fromInt(
+          6, // IPPROTO_TCP
+          6, // TCP_KEEPCNT
+          keepaliveSuccessiveCount);
+
+      socket.setRawOption(enableKeepaliveOption);
+      socket.setRawOption(keepaliveIntervalOption);
+      socket.setRawOption(keepaliveSuccessiveIntervalOption);
+      socket.setRawOption(keepaliveusccessiveCountOption);
+    }
   }
 
   // ************************ Printer Commands ************************
