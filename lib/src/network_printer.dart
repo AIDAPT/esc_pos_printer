@@ -32,12 +32,21 @@ class NetworkPrinter {
   PaperSize get paperSize => _paperSize;
   CapabilityProfile get profile => _profile;
   late StreamSubscription<RawSocketEvent> _socketListenerSubscription;
-  Future<PosPrintResult> connect(String host, {int port = 91000, Duration timeout = const Duration(seconds: 5), Function(RawSocketEvent?)? onData, Function(Object err, StackTrace)? onError, Function()? onDone}) async {
+  Future<PosPrintResult> connect(String host, {int port = 91000, Duration timeout = const Duration(seconds: 5), Function(Object err, StackTrace)? onError}) async {
     _host = host;
     _port = port;
     try {
       _client = await RawSocket.connect(host, port, timeout: timeout);
-      _socketListenerSubscription = _client.listen(onData, onError: onError, onDone: onDone, cancelOnError: true);
+      _socketListenerSubscription = _client.listen(
+          (RawSocketEvent event) {
+            int availableData = _client.available();
+            print(['PRINTER-DATA', event, availableData]);
+          },
+          onError: onError,
+          onDone: () {
+            print(['PRINTER-DONE']);
+          },
+          cancelOnError: true);
       /*dataStreamController = StreamController();
       dataStream = dataStreamController.stream;
       _socket = await Socket.connect(host, port, timeout: timeout, sourcePort: );
