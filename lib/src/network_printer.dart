@@ -56,7 +56,7 @@ class NetworkPrinter {
 
     try {
       _client?.close();
-      runZonedGuarded(() async {
+      await runZonedGuarded(() async {
         _client = await Socket.connect(host, port, timeout: timeout).catchError(onError);
       }, onError);
       if (_client == null) {
@@ -64,7 +64,7 @@ class NetworkPrinter {
       }
 
       _enableKeepalive(_client!, keepaliveInterval: timeout.inSeconds, keepaliveSuccessiveInterval: timeout.inSeconds, keepaliveEnabled: true);
-      runZonedGuarded(() async {
+      await runZonedGuarded(() async {
         _client!.handleError((Object err, StackTrace stackTrace) {
           print([err, stackTrace]);
           onError(err, stackTrace);
