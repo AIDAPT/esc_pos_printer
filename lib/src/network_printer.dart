@@ -42,21 +42,17 @@ class NetworkPrinter {
     _host = host;
     _port = port;
     _dataStream = [];
-    TcpConnectionState status;
 
     log('CONNECTING');
     if (attempt == 1) _stopTrying = false;
     if (attempt == 5) {
-      status = TcpConnectionState.failed;
       return false;
     }
     if (_stopTrying) {
-      status = TcpConnectionState.disconnected;
       return false;
     }
 
     attempt++;
-    status = TcpConnectionState.connecting;
 
     try {
       _client?.close();
@@ -65,17 +61,12 @@ class NetworkPrinter {
         return await connect(host, onError, port: port, timeout: timeout, maxRetry: maxRetry);
       }
 
-      status = TcpConnectionState.connected;
-
       _enableKeepalive(_client!, keepaliveInterval: timeout.inSeconds, keepaliveSuccessiveInterval: timeout.inSeconds, keepaliveEnabled: true);
-      _client!.listen((data) {
-        print(["PRINTER DATA", data.toString()]);
-      });
+      _client!.handleError(onError);
       _client!.done.then(
         (dynamic _) {
-          //flush();
           log('SOCKET DISCONNECTED, ATTEMPTING RECONNECT');
-          status = TcpConnectionState.disconnected;
+          _flush();
           _client?.close();
           _client = null;
           Timer(timeout, () async {
@@ -86,7 +77,6 @@ class NetworkPrinter {
       );
     } on Exception catch (e) {
       print(e);
-      status = TcpConnectionState.failed;
       return false;
     }
     return true;
@@ -128,6 +118,10 @@ class NetworkPrinter {
       _client!.add(data);
       //_client.send(data);
     }
+    _flush();
+  }
+
+  void _flush() {
     _dataStream.clear();
   }
 
