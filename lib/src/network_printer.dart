@@ -233,6 +233,7 @@ class NetworkPrinter {
   }
 
   void printCurrencySymbol({String? codeTable}) {
+    print(["Try ${codeTable ?? _globalCodeTable} codeTable"]);
     final List<int> list = List.from(commands.cCodeTable.codeUnits);
     final List<int> endList = [];
     int count = 0;
@@ -240,11 +241,11 @@ class NetworkPrinter {
       endList.addAll((count++).toString().codeUnits);
       endList.add(e);
     });
-    final Uint8List encoded = Uint8List.fromList(endList..add(_profile.getCodePageId(codeTable)));
+    final Uint8List encoded = Uint8List.fromList(endList..add(_profile.getCodePageId(codeTable ?? _globalCodeTable)));
     const PosTextSize size = PosTextSize.size1;
     textEncoded(
       encoded,
-      styles: PosStyles(width: size, height: size, codeTable: codeTable),
+      styles: PosStyles(width: size, height: size, codeTable: codeTable ?? _globalCodeTable),
     );
   }
 
