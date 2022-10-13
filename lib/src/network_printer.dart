@@ -26,7 +26,7 @@ class NetworkPrinter {
   String? _host;
   int? _port;
   late Generator _generator;
-  late Socket? _client;
+  Socket? _client;
   //late TcpClient _client;
   late StreamController<List<int>> _dataStream;
 
@@ -67,6 +67,7 @@ class NetworkPrinter {
 
       status = TcpConnectionState.connected;
 
+      _enableKeepalive(_client!, keepaliveInterval: timeout.inSeconds, keepaliveSuccessiveInterval: timeout.inSeconds, keepaliveEnabled: true);
       _client!.listen((data) {
         print(["PRINTER DATA", data.toString()]);
       });
