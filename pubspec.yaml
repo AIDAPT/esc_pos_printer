@@ -14,6 +14,7 @@ dependencies:
   # esc_pos_utils:
   #   path: ../esc_pos_utils
   image: ^3.0.2
+  tcp_client_dart: ^0.2.0
 
 dev_dependencies:
   flutter_test:

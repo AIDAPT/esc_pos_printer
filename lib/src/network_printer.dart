@@ -12,6 +12,7 @@ import 'dart:io';
 import 'dart:typed_data' show Uint8List;
 import 'package:esc_pos_utils/esc_pos_utils.dart';
 import 'package:image/image.dart';
+import 'package:tcp_client_dart/tcp_client_dart.dart';
 import './enums.dart';
 
 /// Network Printer
@@ -25,7 +26,8 @@ class NetworkPrinter {
   String? _host;
   int? _port;
   late Generator _generator;
-  late Socket _client;
+  //late Socket _client;
+  late TcpClient _client;
 
   int? get port => _port;
   String? get host => _host;
@@ -36,11 +38,21 @@ class NetworkPrinter {
     _host = host;
     _port = port;
     try {
+      TcpClient.debug = true;
+      _client = await TcpClient.connect(host, port, connectionType: TcpConnectionType.persistent, timeout: timeout);
+      _client.connectionStream.listen((event) {
+        print(["Printer onData", event]);
+      }, onError: onError);
+
+      _client.stringStream.listen(print);
+
+      /*
       _client = await Socket.connect(host, port, timeout: timeout);
       _enableKeepalive(_client, keepaliveInterval: timeout.inSeconds, keepaliveSuccessiveInterval: timeout.inSeconds, keepaliveEnabled: true);
       print([_client.port, _client.address, _client.remotePort, _client.remotePort]);
       _client.handleError(onError);
       _socketListenerSubscription = _client.listen(null, onError: onError);
+      */
 
       reset();
       return Future<PosPrintResult>.value(PosPrintResult.success);
@@ -61,11 +73,13 @@ class NetworkPrinter {
   }
 
   void send(List<int> data) async {
-    _client.add(data);
+    //_client.add(data);
+    _client.send(data);
   }
 
   void destroy() {
-    _client.destroy();
+    //_client.destroy();
+    _client.close();
     _socketListenerSubscription.cancel();
   }
 
