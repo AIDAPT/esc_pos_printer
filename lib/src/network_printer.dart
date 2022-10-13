@@ -11,6 +11,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data' show Uint8List;
 import 'package:esc_pos_utils/esc_pos_utils.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:image/image.dart';
 import 'package:tcp_client_dart/tcp_client_dart.dart';
 import './enums.dart';
@@ -233,14 +234,11 @@ class NetworkPrinter {
   }
 
   void printCurrencySymbol({String? codeTable}) {
-    print(["Try ${codeTable ?? _globalCodeTable} codeTable"]);
-    final List<int> list = List.from(commands.cCodeTable.codeUnits);
+    print(["Try ${codeTable ?? _globalCodeTable} codeTable, ${commands.cCodeTable}"]);
     final List<int> endList = [];
-    int count = 0;
-    list.forEach((e) {
-      endList.addAll((count++).toString().codeUnits);
-      endList.add(e);
-    });
+    for (int i = 0; i < commands.cCodeTable.length; i++) {
+      endList.addAll('$i ${commands.cCodeTable[i]}'.codeUnits);
+    }
     final Uint8List encoded = Uint8List.fromList(endList..add(_profile.getCodePageId(codeTable ?? _globalCodeTable)));
     const PosTextSize size = PosTextSize.size1;
     textEncoded(
