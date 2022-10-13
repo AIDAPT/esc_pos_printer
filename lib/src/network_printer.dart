@@ -26,8 +26,8 @@ class NetworkPrinter {
   String? _host;
   int? _port;
   late Generator _generator;
-  //late Socket _client;
-  late TcpClient _client;
+  late Socket _client;
+  //late TcpClient _client;
   late StreamController<List<int>> _dataStream;
 
   int? get port => _port;
@@ -41,6 +41,7 @@ class NetworkPrinter {
     try {
       _dataStream = StreamController();
 
+/*
       TcpClient.debug = true;
       _client = await TcpClient.connect(host, port, timeout: timeout);
       _client.connectionStream.listen((event) {
@@ -48,14 +49,13 @@ class NetworkPrinter {
       }, onError: onError);
 
       _client.stringStream.listen(print);
+*/
 
-      /*
       _client = await Socket.connect(host, port, timeout: timeout);
       _enableKeepalive(_client, keepaliveInterval: timeout.inSeconds, keepaliveSuccessiveInterval: timeout.inSeconds, keepaliveEnabled: true);
       print([_client.port, _client.address, _client.remotePort, _client.remotePort]);
       _client.handleError(onError);
       _socketListenerSubscription = _client.listen(null, onError: onError);
-      */
 
       reset();
       await send();
@@ -77,13 +77,13 @@ class NetworkPrinter {
   }
 
   void _add(List<int> data) async {
-    //_client.add(data);
     _dataStream.add(data);
   }
 
   Future<void> send() async {
     await _dataStream.stream.forEach((data) {
-      _client.send(data);
+      _client.add(data);
+      //_client.send(data);
     });
     await _dataStream.stream.drain(true);
   }
