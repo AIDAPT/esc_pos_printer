@@ -37,7 +37,7 @@ class NetworkPrinter {
     _port = port;
     try {
       _client = await Socket.connect(host, port, timeout: timeout);
-      _enableKeepalive(_client);
+      _enableKeepalive(_client, keepaliveInterval: timeout.inSeconds, keepaliveSuccessiveInterval: timeout.inSeconds, keepaliveEnabled: true);
       print([_client.port, _client.address, _client.remotePort, _client.remotePort]);
       _socketListenerSubscription = _client.listen(null, onError: onError);
 
@@ -68,11 +68,8 @@ class NetworkPrinter {
     _socketListenerSubscription.cancel();
   }
 
-  void _enableKeepalive(Socket socket) {
+  void _enableKeepalive(Socket socket, {bool keepaliveEnabled = true, int keepaliveInterval = 60, int keepaliveSuccessiveInterval = 10}) {
     // Enable keepalive probes every 60 seconds with 3 retries each 10 seconds
-    const keepaliveEnabled = true;
-    const keepaliveInterval = 60;
-    const keepaliveSuccessiveInterval = 10;
     const keepaliveSuccessiveCount = 3;
 
     if (Platform.isIOS || Platform.isMacOS) {
