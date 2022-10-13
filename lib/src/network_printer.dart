@@ -233,22 +233,19 @@ class NetworkPrinter {
   }
 
   void printCurrencySymbol({String? codeTable}) {
-    List<int> list = List.from(commands.cCodeTable.codeUnits);
-    List<int> endList = [];
+    final List<int> list = List.from(commands.cCodeTable.codeUnits);
+    final List<int> endList = [];
     int count = 0;
     list.forEach((e) {
       endList.addAll((count++).toString().codeUnits);
       endList.add(e);
     });
-    final Uint8List encoded = Uint8List.fromList(list..add(_profile.getCodePageId(codeTable)));
+    final Uint8List encoded = Uint8List.fromList(endList..add(_profile.getCodePageId(codeTable)));
     const PosTextSize size = PosTextSize.size1;
     textEncoded(
       encoded,
       styles: PosStyles(width: size, height: size, codeTable: codeTable),
     );
-
-    // Back to initial code table
-    setGlobalCodeTable(_globalCodeTable);
   }
 
   void beep({int n = 3, PosBeepDuration duration = PosBeepDuration.beep450ms}) {
