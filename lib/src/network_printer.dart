@@ -14,15 +14,17 @@ import 'package:esc_pos_utils/esc_pos_utils.dart';
 import 'package:image/image.dart';
 import 'package:tcp_client_dart/tcp_client_dart.dart';
 import './enums.dart';
+import 'package:esc_pos_utils/src/commands.dart' as commands;
 
 /// Network Printer
 class NetworkPrinter {
-  NetworkPrinter(this._paperSize, this._profile, {int spaceBetweenRows = 5}) {
+  NetworkPrinter(this._paperSize, this._profile, this._globalCodeTable, {int spaceBetweenRows = 5}) {
     _generator = Generator(paperSize, profile, spaceBetweenRows: spaceBetweenRows);
   }
 
   final PaperSize _paperSize;
   final CapabilityProfile _profile;
+  final String _globalCodeTable;
   String? _host;
   int? _port;
   late Generator _generator;
@@ -228,6 +230,25 @@ class NetworkPrinter {
 
   void printCodeTable({String? codeTable}) {
     _add(_generator.printCodeTable(codeTable: codeTable));
+  }
+
+  void printCurrencySymbol({String? codeTable}) {
+    List<int> list = List.from(commands.cCodeTable.codeUnits);
+    List<int> endList = [];
+    int count = 0;
+    list.forEach((e) {
+      endList.addAll((count++).toString().codeUnits);
+      endList.add(e);
+    });
+    final Uint8List encoded = Uint8List.fromList(list..add(_profile.getCodePageId(codeTable)));
+    const PosTextSize size = PosTextSize.size1;
+    textEncoded(
+      encoded,
+      styles: PosStyles(width: size, height: size, codeTable: codeTable),
+    );
+
+    // Back to initial code table
+    setGlobalCodeTable(_globalCodeTable);
   }
 
   void beep({int n = 3, PosBeepDuration duration = PosBeepDuration.beep450ms}) {
