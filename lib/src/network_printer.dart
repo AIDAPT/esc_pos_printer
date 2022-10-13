@@ -34,8 +34,8 @@ class NetworkPrinter {
   String? get host => _host;
   PaperSize get paperSize => _paperSize;
   CapabilityProfile get profile => _profile;
-  late StreamSubscription<Uint8List> _socketListenerSubscription;
-  int attempt = 1;
+  //late StreamSubscription<Uint8List> _socketListenerSubscription;
+  int attempt = 0;
   bool _stopTrying = true;
 
   Future<bool> connect(String host, Function(Object err, StackTrace) onError, {int port = 91000, Duration timeout = const Duration(seconds: 5), int maxRetry = 3}) async {
@@ -43,9 +43,9 @@ class NetworkPrinter {
     _port = port;
     _dataStream = [];
 
-    log('CONNECTING attempt:$attempt');
-    if (attempt == 1) _stopTrying = false;
-    if (attempt == 5) {
+    log('CONNECTING attempt:$attempt/$maxRetry');
+    if (attempt == 0) _stopTrying = false;
+    if (attempt == maxRetry) {
       return false;
     }
     if (_stopTrying) {
@@ -127,7 +127,7 @@ class NetworkPrinter {
   void destroy() {
     //_client.destroy();
     _client!.close();
-    _socketListenerSubscription.cancel();
+    //_socketListenerSubscription.cancel();
   }
 
   void _enableKeepalive(Socket socket, {bool keepaliveEnabled = true, int keepaliveInterval = 60, int keepaliveSuccessiveInterval = 10}) {
