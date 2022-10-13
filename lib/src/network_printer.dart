@@ -26,7 +26,7 @@ class NetworkPrinter {
   String? _host;
   int? _port;
   late Generator _generator;
-  late Socket _client;
+  late Socket? _client;
   //late TcpClient _client;
   late StreamController<List<int>> _dataStream;
 
@@ -35,22 +35,61 @@ class NetworkPrinter {
   PaperSize get paperSize => _paperSize;
   CapabilityProfile get profile => _profile;
   late StreamSubscription<Uint8List> _socketListenerSubscription;
-  Future<PosPrintResult> connect(String host, Function(Object err, StackTrace) onError, {int port = 91000, Duration timeout = const Duration(seconds: 5)}) async {
+  int attempt = 1;
+  bool _stopTrying = true;
+
+  Future<TcpConnectionState> connect(String host, Function(Object err, StackTrace) onError, {int port = 91000, Duration timeout = const Duration(seconds: 5), int maxRetry = 3}) async {
     _host = host;
     _port = port;
+    _dataStream = StreamController();
+    TcpConnectionState status;
+
+    log('CONNECTING');
+    if (attempt == 1) _stopTrying = false;
+    if (attempt == 5) {
+      status = TcpConnectionState.failed;
+      return status;
+    }
+    if (_stopTrying) {
+      status = TcpConnectionState.disconnected;
+      return status;
+    }
+
+    attempt++;
+    status = TcpConnectionState.connecting;
+
     try {
-      _dataStream = StreamController();
+      _client?.close();
+      _client = await Socket.connect(host, port, timeout: timeout);
+      if (_client == null) {
+        return await connect(host, onError, port: port, timeout: timeout, maxRetry: maxRetry);
+      }
+
+      status = TcpConnectionState.connected;
+
+      _client!.listen((data) {
+        print(["PRINTER DATA", data.toString()]);
+      });
+      _client!.done.then(
+        (dynamic _) {
+          //flush();
+          log('SOCKET DISCONNECTED, ATTEMPTING RECONNECT');
+          status = TcpConnectionState.disconnected;
+          _client?.close();
+          _client = null;
+          Timer(timeout, () async {
+            attempt = 1;
+            await connect(host, onError, port: port, timeout: timeout, maxRetry: maxRetry);
+          });
+        },
+      );
+    } on Exception catch (e) {
+      print(e);
+      status = TcpConnectionState.failed;
+    }
+    return status;
 
 /*
-      TcpClient.debug = true;
-      _client = await TcpClient.connect(host, port, timeout: timeout);
-      _client.connectionStream.listen((event) {
-        print(["Printer onData", event]);
-      }, onError: onError);
-
-      _client.stringStream.listen(print);
-*/
-
       _client = await Socket.connect(host, port, timeout: timeout);
       _enableKeepalive(_client, keepaliveInterval: timeout.inSeconds, keepaliveSuccessiveInterval: timeout.inSeconds, keepaliveEnabled: true);
       print([_client.port, _client.address, _client.remotePort, _client.remotePort]);
@@ -66,6 +105,7 @@ class NetworkPrinter {
       }
       rethrow;
     }
+    */
   }
 
   /// [delayMs]: milliseconds to wait after destroying the socket
@@ -82,7 +122,7 @@ class NetworkPrinter {
 
   Future<void> send() async {
     await _dataStream.stream.forEach((data) {
-      _client.add(data);
+      _client!.add(data);
       //_client.send(data);
     });
     await _dataStream.stream.drain(true);
@@ -90,7 +130,7 @@ class NetworkPrinter {
 
   void destroy() {
     //_client.destroy();
-    _client.close();
+    _client!.close();
     _socketListenerSubscription.cancel();
   }
 
