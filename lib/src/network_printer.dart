@@ -38,7 +38,7 @@ class NetworkPrinter {
   int attempt = 1;
   bool _stopTrying = true;
 
-  Future<TcpConnectionState> connect(String host, Function(Object err, StackTrace) onError, {int port = 91000, Duration timeout = const Duration(seconds: 5), int maxRetry = 3}) async {
+  Future<bool> connect(String host, Function(Object err, StackTrace) onError, {int port = 91000, Duration timeout = const Duration(seconds: 5), int maxRetry = 3}) async {
     _host = host;
     _port = port;
     _dataStream = StreamController();
@@ -48,11 +48,11 @@ class NetworkPrinter {
     if (attempt == 1) _stopTrying = false;
     if (attempt == 5) {
       status = TcpConnectionState.failed;
-      return status;
+      return false;
     }
     if (_stopTrying) {
       status = TcpConnectionState.disconnected;
-      return status;
+      return false;
     }
 
     attempt++;
@@ -86,8 +86,9 @@ class NetworkPrinter {
     } on Exception catch (e) {
       print(e);
       status = TcpConnectionState.failed;
+      return false;
     }
-    return status;
+    return true;
 
 /*
       _client = await Socket.connect(host, port, timeout: timeout);
