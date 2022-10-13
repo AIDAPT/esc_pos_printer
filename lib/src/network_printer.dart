@@ -28,7 +28,7 @@ class NetworkPrinter {
   late Generator _generator;
   Socket? _client;
   //late TcpClient _client;
-  late StreamController<List<int>> _dataStream;
+  late List<List<int>> _dataStream;
 
   int? get port => _port;
   String? get host => _host;
@@ -41,7 +41,7 @@ class NetworkPrinter {
   Future<bool> connect(String host, Function(Object err, StackTrace) onError, {int port = 91000, Duration timeout = const Duration(seconds: 5), int maxRetry = 3}) async {
     _host = host;
     _port = port;
-    _dataStream = StreamController();
+    _dataStream = [];
     TcpConnectionState status;
 
     log('CONNECTING');
@@ -122,12 +122,13 @@ class NetworkPrinter {
     _dataStream.add(data);
   }
 
-  Future<void> send() async {
-    await _dataStream.stream.forEach((data) {
+  void send() {
+    // ignore: prefer_foreach
+    for (var data in _dataStream) {
       _client!.add(data);
       //_client.send(data);
-    });
-    await _dataStream.stream.drain(true);
+    }
+    _dataStream.clear();
   }
 
   void destroy() {
