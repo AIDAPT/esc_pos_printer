@@ -232,17 +232,21 @@ class NetworkPrinter {
   }
 
   void printCurrencySymbol({String? codeTable}) {
-    print(["Try ${codeTable ?? _globalCodeTable} codeTable, ${commands.cCodeTable}"]);
-    final List<int> endList = [];
-    for (int i = 0; i < commands.cCodeTable.length; i++) {
-      endList.addAll('$i ${commands.cCodeTable[i]}'.codeUnits);
-    }
-    final Uint8List encoded = Uint8List.fromList(endList..add(_profile.getCodePageId(codeTable ?? _globalCodeTable)));
-    const PosTextSize size = PosTextSize.size1;
-    textEncoded(
-      encoded,
-      styles: PosStyles(width: size, height: size, codeTable: codeTable ?? _globalCodeTable),
-    );
+    print(["Try ${codeTable ?? _globalCodeTable} codeTable"]);
+    List<int> bytes = [];
+    bytes += commands.cKanjiOff.codeUnits;
+
+    List<int> newCodeTable = List.from(commands.cCodeTable.codeUnits)..add(_profile.getCodePageId(codeTable));
+    List<int> exCodeTable = List.from(commands.cCodeTable.codeUnits)..add(_profile.getCodePageId(_globalCodeTable));
+    List<int>.generate(256, (i) => i).forEach((element) {
+      bytes += Uint8List.fromList(exCodeTable
+        ..addAll(" - [".codeUnits)
+        ..addAll(newCodeTable)
+        ..add(element)
+        ..addAll(exCodeTable)
+        ..addAll(" $element]".codeUnits));
+    });
+    _add(bytes);
   }
 
   void beep({int n = 3, PosBeepDuration duration = PosBeepDuration.beep450ms}) {
