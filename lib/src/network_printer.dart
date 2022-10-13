@@ -10,12 +10,10 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data' show Uint8List;
+
 import 'package:esc_pos_utils/esc_pos_utils.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:image/image.dart';
-import 'package:tcp_client_dart/tcp_client_dart.dart';
-import './enums.dart';
 import 'package:esc_pos_utils/src/commands.dart' as commands;
+import 'package:image/image.dart';
 
 /// Network Printer
 class NetworkPrinter {
