@@ -43,7 +43,7 @@ class NetworkPrinter {
     _port = port;
     _dataStream = [];
 
-    log('CONNECTING');
+    log('CONNECTING attempt:$attempt');
     if (attempt == 1) _stopTrying = false;
     if (attempt == 5) {
       return false;
@@ -62,20 +62,15 @@ class NetworkPrinter {
       }
 
       _enableKeepalive(_client!, keepaliveInterval: timeout.inSeconds, keepaliveSuccessiveInterval: timeout.inSeconds, keepaliveEnabled: true);
-      _client!.handleError(onError);
-      _client!.done.then(
-        (dynamic _) {
-          log('SOCKET DISCONNECTED, ATTEMPTING RECONNECT');
-          _flush();
-          _client?.close();
-          _client = null;
-          Timer(timeout, () async {
-            attempt = 1;
-            await connect(host, onError, port: port, timeout: timeout, maxRetry: maxRetry);
-          });
-        },
-      );
-    } on Exception catch (e) {
+      _client!.handleError((Object err, StackTrace stackTrace) {
+        print([err, stackTrace]);
+        onError(err, stackTrace);
+        Timer(timeout, () async {
+          attempt = 1;
+          await connect(host, onError, port: port, timeout: timeout, maxRetry: maxRetry);
+        });
+      });
+    } catch (e) {
       print(e);
       return false;
     }
