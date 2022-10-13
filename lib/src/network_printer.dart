@@ -39,8 +39,8 @@ class NetworkPrinter {
       _client = await Socket.connect(host, port, timeout: timeout);
       _enableKeepalive(_client, keepaliveInterval: timeout.inSeconds, keepaliveSuccessiveInterval: timeout.inSeconds, keepaliveEnabled: true);
       print([_client.port, _client.address, _client.remotePort, _client.remotePort]);
-      _socketListenerSubscription = _client.listen(null, onError: onError);
       _client.handleError(onError);
+      _socketListenerSubscription = _client.listen(null, onError: onError);
 
       reset();
       return Future<PosPrintResult>.value(PosPrintResult.success);
