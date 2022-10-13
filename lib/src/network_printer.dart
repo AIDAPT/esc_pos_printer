@@ -55,21 +55,23 @@ class NetworkPrinter {
     attempt++;
 
     try {
-      _client?.close();
-      _client = await Socket.connect(host, port, timeout: timeout);
-      if (_client == null) {
-        return await connect(host, onError, port: port, timeout: timeout, maxRetry: maxRetry);
-      }
+      runZonedGuarded(() async {
+        _client?.close();
+        _client = await Socket.connect(host, port, timeout: timeout).catchError(onError);
+        if (_client == null) {
+          return await connect(host, onError, port: port, timeout: timeout, maxRetry: maxRetry);
+        }
 
-      _enableKeepalive(_client!, keepaliveInterval: timeout.inSeconds, keepaliveSuccessiveInterval: timeout.inSeconds, keepaliveEnabled: true);
-      _client!.handleError((Object err, StackTrace stackTrace) {
-        print([err, stackTrace]);
-        onError(err, stackTrace);
-        Timer(timeout, () async {
-          attempt = 1;
-          await connect(host, onError, port: port, timeout: timeout, maxRetry: maxRetry);
+        _enableKeepalive(_client!, keepaliveInterval: timeout.inSeconds, keepaliveSuccessiveInterval: timeout.inSeconds, keepaliveEnabled: true);
+        _client!.handleError((Object err, StackTrace stackTrace) {
+          print([err, stackTrace]);
+          onError(err, stackTrace);
+          Timer(timeout, () async {
+            attempt = 1;
+            await connect(host, onError, port: port, timeout: timeout, maxRetry: maxRetry);
+          });
         });
-      });
+      }, onError);
     } catch (e) {
       print(e);
       return false;
