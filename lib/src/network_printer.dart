@@ -32,7 +32,7 @@ class NetworkPrinter {
   PaperSize get paperSize => _paperSize;
   CapabilityProfile get profile => _profile;
   late StreamSubscription<Uint8List> _socketListenerSubscription;
-  Future<PosPrintResult> connect(String host, {int port = 91000, Duration timeout = const Duration(seconds: 5), Function(Object err, StackTrace)? onError}) async {
+  Future<PosPrintResult> connect(String host, Function(Object err, StackTrace) onError, {int port = 91000, Duration timeout = const Duration(seconds: 5)}) async {
     _host = host;
     _port = port;
     try {
@@ -40,6 +40,7 @@ class NetworkPrinter {
       _enableKeepalive(_client, keepaliveInterval: timeout.inSeconds, keepaliveSuccessiveInterval: timeout.inSeconds, keepaliveEnabled: true);
       print([_client.port, _client.address, _client.remotePort, _client.remotePort]);
       _socketListenerSubscription = _client.listen(null, onError: onError);
+      _client.handleError(onError);
 
       reset();
       return Future<PosPrintResult>.value(PosPrintResult.success);
