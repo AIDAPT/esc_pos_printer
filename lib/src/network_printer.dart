@@ -251,6 +251,11 @@ class NetworkPrinter {
 
     List<int> newCodeTable = List.from(commands.cCodeTable.codeUnits)..add(_profile.getCodePageId(codeTable));
     List<int> exCodeTable = List.from(commands.cCodeTable.codeUnits)..add(_profile.getCodePageId(_globalCodeTable));
+
+    bytes += Uint8List.fromList([]
+      ..addAll(exCodeTable)
+      ..addAll(('CodeTable: $codeTable').codeUnits));
+    _add(_generator.emptyLines(1));
     List<int>.generate(256, (i) => i).forEach((element) {
       bytes += Uint8List.fromList([]
         ..addAll(exCodeTable)
