@@ -24,7 +24,7 @@ class NetworkPrinter {
     int spaceBetweenRows = 5,
     String? globalCodeTable,
   }) {
-    _globalCodeTable = globalCodeTable ?? CodeTables.values[0];
+    _globalCodeTable = globalCodeTable ?? _profile.codePages[0].name;
     _generator = Generator(paperSize, profile, spaceBetweenRows: spaceBetweenRows);
   }
 
@@ -194,6 +194,10 @@ class NetworkPrinter {
   }
 
   // ************************ Printer Commands ************************
+  List<String> getCodeTables() {
+    return _profile.codePages.map((element) => element.name).toList();
+  }
+
   void reset() {
     _add(_generator.reset());
   }
