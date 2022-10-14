@@ -34,3 +34,8 @@ class PosPrintResult {
     }
   }
 }
+
+// ignore: avoid_classes_with_only_static_members
+class CodeTables {
+  static final List<String> values = ['CP437', 'ISO-8859-1', 'ISO-8859-15', 'windows-1252', 'windows-1258'];
+}

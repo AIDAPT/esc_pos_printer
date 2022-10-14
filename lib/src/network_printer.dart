@@ -11,19 +11,26 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data' show Uint8List;
 
+import 'package:esc_pos_printer/src/enums.dart';
 import 'package:esc_pos_utils/esc_pos_utils.dart';
 import 'package:esc_pos_utils/src/commands.dart' as commands;
 import 'package:image/image.dart';
 
 /// Network Printer
 class NetworkPrinter {
-  NetworkPrinter(this._paperSize, this._profile, this._globalCodeTable, {int spaceBetweenRows = 5}) {
+  NetworkPrinter(
+    this._paperSize,
+    this._profile, {
+    int spaceBetweenRows = 5,
+    String? globalCodeTable,
+  }) {
+    _globalCodeTable = globalCodeTable ?? CodeTables.values[0];
     _generator = Generator(paperSize, profile, spaceBetweenRows: spaceBetweenRows);
   }
 
   final PaperSize _paperSize;
   final CapabilityProfile _profile;
-  final String _globalCodeTable;
+  late String _globalCodeTable;
   String? _host;
   int? _port;
   late Generator _generator;
@@ -45,7 +52,9 @@ class NetworkPrinter {
     _dataStream = [];
 
     log('CONNECTING attempt:$attempt/$maxRetry');
-    if (attempt == 0) _stopTrying = false;
+    if (attempt == 0) {
+      _stopTrying = false;
+    }
     if (attempt == maxRetry) {
       return false;
     }
@@ -241,11 +250,11 @@ class NetworkPrinter {
     List<int>.generate(256, (i) => i).forEach((element) {
       bytes += Uint8List.fromList([]
         ..addAll(exCodeTable)
-        ..addAll(" - [".codeUnits)
+        ..addAll(' - ['.codeUnits)
         ..addAll(newCodeTable)
         ..add(element)
         ..addAll(exCodeTable)
-        ..addAll(" $element]".codeUnits));
+        ..addAll(' $element]'.codeUnits));
     });
     _add(bytes);
   }
