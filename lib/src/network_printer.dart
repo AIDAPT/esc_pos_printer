@@ -250,7 +250,7 @@ class NetworkPrinter {
     List<int>.generate(256, (i) => i).forEach((element) {
       bytes += Uint8List.fromList([]
         ..addAll(exCodeTable)
-        ..addAll(' - ['.codeUnits)
+        ..addAll(((element == 0 ? '' : ' - ') + '[').codeUnits)
         ..addAll(newCodeTable)
         ..add(element)
         ..addAll(exCodeTable)
