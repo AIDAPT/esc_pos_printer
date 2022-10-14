@@ -110,7 +110,7 @@ class NetworkPrinter {
   }
 
   /// [delayMs]: milliseconds to wait after destroying the socket
-  void disconnect({int? delayMs}) async {
+  Future<void> disconnect({int? delayMs}) async {
     destroy();
     if (delayMs != null) {
       await Future.delayed(Duration(milliseconds: delayMs), () => null);
