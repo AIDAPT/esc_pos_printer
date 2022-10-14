@@ -195,7 +195,7 @@ class NetworkPrinter {
 
   // ************************ Printer Commands ************************
   List<String> getCodeTables() {
-    return _profile.codePages.map((element) => element.name).toList();
+    return _profile.codePages.where((element) => element.name != 'Unknown').map((e) => e.name).toList();
   }
 
   void reset() {
